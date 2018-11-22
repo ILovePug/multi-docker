@@ -1,0 +1,45 @@
+version: '3'
+services:
+  postgres:
+    image: 'postgres:latest'
+  redis:
+    image: 'redis:latest'
+  nginx:
+    restart: always
+    build: 
+      dockerfile: Dockerfile.dev
+      context: ./nginx
+    ports: 
+      - '3050:80'
+  api:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./server #the location of the dockerfile
+    volumes: 
+      - /app/node_modules #exclude this folder
+      - ./server:/app #map local server folder to container app folder
+    environment:
+      - REDIS_HOST=redis #value is the name of the service
+      - REDIS_PORT=6379 #documentation says to expose to 6379
+      - PGUSER=postgres #postgres default 
+      - PGHOST=postgres #the serivce name
+      - PGDATABASE=postgres #postgres default 
+      - PGPASSWORD=postgres_password #postgres default 
+      - PGPORT=5432 #postgres default 
+  client:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./client #the location of the dockerfile
+    volumes: 
+      - /app/node_modules #exclude this folder
+      - ./client:/app #map local client folder to container app folder    
+  worker:
+    build:
+      dockerfile: Dockerfile.dev
+      context: ./worker #the location of the dockerfile
+    volumes: 
+      - /app/node_modules #exclude this folder
+      - ./worker:/app #map local client folder to container app folder    
+    environment:
+      - REDIS_HOST=redis #value is the name of the service
+      - REDIS_PORT=6379 #documentation says to expose to 6379
