@@ -1,0 +1,29 @@
+sudo: required
+services:
+  - docker
+before_install:
+  docker build -t qianweng/react-test -f ./client/Dockerfile.dev ./client
+  #to test other service like server(non-exist) 
+  #docker build -t qianweng/react-server -f ./server/Dockerfile.dev ./server
+
+script:
+  - docker run qianweng/react-test npm test -- --coverage
+  #to test other service like server(non-exist) 
+  #docker run qianweng/react-server npm test -- --coverage
+
+after_success:
+  #now build the production image
+  - docker build -t qianweng/multi-client ./client
+  - docker build -t qianweng/multi-nginx ./nginx
+  - docker build -t qianweng/multi-server ./server
+  - docker build -t qianweng/multi-worker ./worker
+
+  #Log in to the docker CLI
+  #get DOCKER_PASSWORD From environment and pass into stdin channel
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  #take those images and push them to docker hub
+  - docker push qianweng/multi-client
+  - docker push qianweng/multi-nginx
+  - docker push qianweng/multi-server
+  - docker push qianweng/multi-worker
