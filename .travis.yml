@@ -27,3 +27,16 @@ after_success:
   - docker push qianweng/multi-nginx
   - docker push qianweng/multi-server
   - docker push qianweng/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: "us-east-1"
+  app: "multi-docker"
+  env: "MultiDocker-env"
+  bucket_name: "elasticbeanstalk-us-east-1-576392300045" #s3 bucket
+  bucket_path: "multi-docker" #same as app name
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: "$AWS_SECRET_KEY"
